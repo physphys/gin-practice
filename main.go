@@ -11,7 +11,7 @@ import (
 
 // Todo is todo item
 type Todo struct {
-	ID        uint `gorm:"primary_key"`
+	ID        uint `gorm:"primary_key;AUTO_INCREMENT"`
 	Text      string
 	Status    string
 	CreatedAt time.Time
@@ -29,6 +29,13 @@ func main() {
 		ctx.HTML(http.StatusOK, "index.html", gin.H{
 			"todos": todos,
 		})
+	})
+
+	router.POST("/new", func(ctx *gin.Context) {
+		text := ctx.PostForm("text")
+		status := ctx.PostForm("status")
+		createTodo(&Todo{Text: text, Status: status})
+		ctx.Redirect(302, "/")
 	})
 
 	router.Run()
