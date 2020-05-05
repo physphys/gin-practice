@@ -2,11 +2,25 @@ package main
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
+// Todo is todo item
+type Todo struct {
+	ID        uint `gorm:"primary_key"`
+	Text      string
+	Status    string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 func main() {
+	dbInit()
+
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*.html")
 
@@ -15,4 +29,19 @@ func main() {
 	})
 
 	router.Run()
+}
+
+func dbInit() {
+	db := connectDB()
+	db.AutoMigrate(&Todo{})
+	defer db.Close()
+}
+
+func connectDB() *gorm.DB {
+	db, err := gorm.Open("postgres", "host=localhost user=todo_owner dbname=todo sslmode=disable")
+	if err != nil {
+		panic(err)
+	}
+
+	return db
 }
