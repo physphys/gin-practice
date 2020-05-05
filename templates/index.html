@@ -22,6 +22,7 @@
   <ul>
     {{ range .todos }}
     <li>内容：{{ .Text }}, 状態：{{ .Status }}
+      <label><a href="/todos/{{.ID}}/edit">編集</a></label>
       <label><a href="/todos/{{.ID}}/delete_check" method="post">削除</a></label>
     </li>
     {{end}}

@@ -49,6 +49,28 @@ func main() {
 		ctx.HTML(http.StatusOK, "delete.html", gin.H{"todo": todo})
 	})
 
+	router.GET("/todos/:id/edit", func(ctx *gin.Context) {
+		n := ctx.Param("id")
+		id, err := strconv.Atoi(n)
+		if err != nil {
+			panic(err)
+		}
+		todo := findTodo(id)
+		ctx.HTML(http.StatusOK, "edit.html", gin.H{"todo": todo})
+	})
+
+	router.POST("/update/todos/:id", func(ctx *gin.Context) {
+		n := ctx.Param("id")
+		id, err := strconv.Atoi(n)
+		if err != nil {
+			panic("ERROR")
+		}
+		text := ctx.PostForm("text")
+		status := ctx.PostForm("status")
+		updateTodo(id, text, status)
+		ctx.Redirect(302, "/")
+	})
+
 	router.POST("/todos/:id/delete", func(ctx *gin.Context) {
 		n := ctx.Param("id")
 		id, err := strconv.Atoi(n)
@@ -95,6 +117,16 @@ func getAllTodo() []Todo {
 	db.Order("created_at desc").Find(&todos)
 	db.Close()
 	return todos
+}
+
+func updateTodo(id int, text string, status string) {
+	db := connectDB()
+	var todo Todo
+	db.First(&todo, id)
+	todo.Text = text
+	todo.Status = status
+	db.Save(&todo)
+	db.Close()
 }
 
 func connectDB() *gorm.DB {
