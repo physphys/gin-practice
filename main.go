@@ -13,19 +13,10 @@ import (
 type Todo struct {
 	ID        uint `gorm:"primary_key"`
 	Text      string
-	Status    TodoStatus
+	Status    string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
-
-// TodoStatus express status of todo
-type TodoStatus int
-
-const (
-	undone TodoStatus = iota
-	doing
-	done
-)
 
 func main() {
 	dbInit()
@@ -34,7 +25,10 @@ func main() {
 	router.LoadHTMLGlob("templates/*.html")
 
 	router.GET("/", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "index.html", gin.H{})
+		todos := getAllTodo()
+		ctx.HTML(http.StatusOK, "index.html", gin.H{
+			"todos": todos,
+		})
 	})
 
 	router.Run()
@@ -49,6 +43,14 @@ func dbInit() {
 func createTodo(todo *Todo) {
 	db := connectDB()
 	db.Create(todo)
+}
+
+func getAllTodo() []Todo {
+	db := connectDB()
+	var todos []Todo
+	db.Order("created_at desc").Find(&todos)
+	db.Close()
+	return todos
 }
 
 func connectDB() *gorm.DB {

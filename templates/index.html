@@ -6,5 +6,10 @@
 </head>
 <body>
   <h1>Hello World!!!</h1>
+  <ul>
+    {{ range .todos }}
+    <li>内容：{{ .Text }}, 状態：{{ .Status }}</li>
+    {{end}}
+  </ul>
 </body>
 </html>
