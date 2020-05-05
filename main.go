@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,27 @@ func main() {
 		text := ctx.PostForm("text")
 		status := ctx.PostForm("status")
 		createTodo(&Todo{Text: text, Status: status})
-		ctx.Redirect(302, "/")
+		ctx.Redirect(http.StatusSeeOther, "/")
+	})
+
+	router.GET("/todos/:id/delete_check", func(ctx *gin.Context) {
+		n := ctx.Param("id")
+		id, err := strconv.Atoi(n)
+		if err != nil {
+			panic("ERROR")
+		}
+		todo := findTodo(id)
+		ctx.HTML(http.StatusOK, "delete.html", gin.H{"todo": todo})
+	})
+
+	router.POST("/todos/:id/delete", func(ctx *gin.Context) {
+		n := ctx.Param("id")
+		id, err := strconv.Atoi(n)
+		if err != nil {
+			panic("ERROR")
+		}
+		deleteTodo(id)
+		ctx.Redirect(http.StatusSeeOther, "/")
 	})
 
 	router.Run()
@@ -47,9 +68,25 @@ func dbInit() {
 	defer db.Close()
 }
 
+func findTodo(id int) Todo {
+	db := connectDB()
+	var todo Todo
+	db.First(&todo, id)
+	db.Close()
+	return todo
+}
+
 func createTodo(todo *Todo) {
 	db := connectDB()
 	db.Create(todo)
+}
+
+func deleteTodo(id int) {
+	db := connectDB()
+	var todo Todo
+	db.First(&todo, id)
+	db.Delete(&todo)
+	db.Close()
 }
 
 func getAllTodo() []Todo {
