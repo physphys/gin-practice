@@ -13,10 +13,19 @@ import (
 type Todo struct {
 	ID        uint `gorm:"primary_key"`
 	Text      string
-	Status    string
+	Status    TodoStatus
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+// TodoStatus express status of todo
+type TodoStatus int
+
+const (
+	undone TodoStatus = iota
+	doing
+	done
+)
 
 func main() {
 	dbInit()
@@ -35,6 +44,11 @@ func dbInit() {
 	db := connectDB()
 	db.AutoMigrate(&Todo{})
 	defer db.Close()
+}
+
+func createTodo(todo *Todo) {
+	db := connectDB()
+	db.Create(todo)
 }
 
 func connectDB() *gorm.DB {
